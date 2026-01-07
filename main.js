@@ -77,8 +77,12 @@ const scene = createScene();
 engine.runRenderLoop(function() {
     // Oh wait that overides the keydown event listener hmm
     // Now need to move cam position instrad of mesh
+    let directionf = camera.getForwardRay().direction;
+    directionf.normalize();
+
     if (forward) {
-        camera.position.z += 0.1;
+        camera.position.addInPlace(directionf.scale(0.1));
+        // camera.position.z += 0.1;
     } else if (backward) {
         camera.position.z -= 0.1;
     }
