@@ -139,3 +139,67 @@
 // Im gonna add in a vertical rotation for cam specifically while thinking how to solve grav
 // pretty good lock in moment we got a lot done 
 // dont know why the rotation isnt locking but its okay ill figure it out soon
+// figured out a new method to fix the up and down movement of the camera
+// its called clamping
+// k well the camera is working better 
+// but the movement isnt looking really good 
+// particulary the physics so im gonna research more on how to do it better
+// do you see this
+// i have to do all that just to move my player :(
+// to explain the code that he wrote before we render the frame we store the movement that we detected with the keyboard inputs and store it all in one vector 
+// then we normalize the vector for some reason 
+// ohhh so it makes it a unit vector to describe direction we want to move in the 3d plane and then we use velocity aimed at that direction 
+// though with his method im pretty sure we will be moving in global space axis i dont like that hmm
+// we can ignore camera smoothing since we arent moving the camera to follow our player
+// since i made it in the box's local space what ever changes move the box with the camera as a part of it
+// damn roblox game creation coming in clutch here :)
+// I hate ads
+// why is game physics so irritating 
+// oh so lerping is like if we hold both a and w it will go diagonally left top i think
+// hmm we are at a crossroad rn
+// we can go use a physics engine but i feel like thats overkill and itll take too long to learn how to debug 
+// lemme try making a vector for gravity
+// oh i alr thought of that wow
+// i have no clue how that syntax works but i think i can just write code in the curly bracket
+// hmm they use deltatime for their timer but does that timer reset? cuz wont it just continually increase while game time continues
+// unless we start a new timer the moment they jump the ground and are not colliding with the ground and stop it the millisecond they land
+// i just thought of a genius idea
+// so when the player clicks a key we register which direction then start a timer and then we set the endtimer call to when they lift the key up than we do smth like
+// speed = timer/10
+// speed = BABYLON.Scalar.Clamp(speed, 0.1, max_speed)
+// box.moveWithCollisions(direction.scale(speed))
+// that way we will be able to move slowly and then increase it bit by bit
+// or maybe we can do an exponential growth pattern
+// gotta learn how to do that first though
+// for now we can use this linear growth pattern
+// anyways need to figure out how to start a timer 
+// or maybe we create a function that will increase every render the count 
+// lemme see if theres a method that already does that
+// wait cant lose that, its our only way to detect the ground
+// theres a timer but dont know if i can create multiple instances 
+// and if i can idk if i want to do That
+// hmm what if we create a direction vector and just add to it or remove from it the various directions
+// sry i got distracted by my phone Oops
+// yikes i dont want to worry about resources too much work :(
+// im gonna be back
+// on a call with friends so no music for now
+// oh shoot i need a stop watch not a timer 
+// looks like i have create one myself
+// hmm i think i need to create one timer and just chnage the direction as input is 
+// hmm i dont think we need a let statement to declare a variable 
+// is life turning around :)
+// nvm its not :(
+// i just came up with a good idea
+// i was wondering how to detect when to stop timer since im using one timer and i can get 4 movement inputs 
+// for example if I used w to start the timer then if i let go of w but was still clicking d how do i detect that im still clicking D
+// and if i just detected if there was keyboard input then would jump also restart the timer
+// its kindav hard to explain but then i realized that i can just put a boolean on each input and when they stop inputting that input its boolean will false
+// then only if all booleans are false will the timer stop
+// i can run a check every render :)
+// im too lazy to make a second function so startTimer stops it as well 
+// aight i did a lot and i think this should work Hopefully
+// oh shoot since i set velocity to 0,0,0 every before render it doesnt add on top of each other wow
+// yay made movement to a velocity now just gravity and everything else possible and im done
+// goodbye
+// just wanted to do a quick video for gravity
+// gonna leave this for tmrw
