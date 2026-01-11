@@ -203,3 +203,29 @@
 // goodbye
 // just wanted to do a quick video for gravity
 // gonna leave this for tmrw
+// hey guys back again time to finish up game physics 
+// lets start 
+// aight i need to learn raycasting first cuz i need to fix my ground detection
+// gonna try out gemini's guided learning feature to teach me this
+// gravity works now i want to fix jumping to make it a velocity kindav jump so currently 
+// jump works now i need to fix the ellipsoid able to catch on the mesh
+// end of this session goodbye
+// hey im gonna actually start making the game
+// i thought it over and im gonna keep the ellipsoid the sphere for now since im gonna change player character later hence no need to customize the ellipsoid for now
+// so for now im gonna make a few jumps and try making some gameplay
+// my headphones werent connected oops
+// need to alter my isground feature 
+// need to set it to if mesh has a property, or actually i think i can just use smth like checkCOllisions property
+// wait that wont filter out the player would it
+// hmmm
+// lets see how to make a property
+// i think i just say object.isGround = true or smth
+// hmm i rly need a proper round player or smth
+// ehh actually lemme check free models
+// but then i need to upload a model
+// hmmm too much work do that later
+// and thats the first part of the game 
+// this velocity things is actually kindav hard
+// taking a break
+// using sphere for player since its the shape of the collision ellipsoid
+// hmm reading uppercase W is a pain but switching to event.code seems more work than just using the line key = event.key.toLowerCase(0)
