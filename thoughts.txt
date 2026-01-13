@@ -229,3 +229,10 @@
 // taking a break
 // using sphere for player since its the shape of the collision ellipsoid
 // hmm reading uppercase W is a pain but switching to event.code seems more work than just using the line key = event.key.toLowerCase(0)
+// tryna finish this soon so getting my design mode on
+// too lazy to find the tutorial so just gonna use guided learning mode and ask gemini how to do the coloring and stuff
+// oops forgot to turn guided mode learning thingy
+// gonna get ai to make a good prompt for each image
+// wow using ai to prompt ai for me how far the world has fallen 
+// just gonna search online for a skybox ai is stupid
+// time to make gui

@@ -41,6 +41,14 @@ const createScene = function() {
     const scene = new BABYLON.Scene(engine);
     scene.collisionsEnabled = true;
     scene.createDefaultLight(true, true);
+    const skybox = BABYLON.MeshBuilder.CreateBox('skyBox', {size: 1000.0}, scene)
+    const skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene)
+    skyboxMaterial.backFaceCulling = false;
+    skyboxMaterial.reflectionTexture = new BABYLON.Texture("unnamed.jpg", scene)
+    skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.FIXED_EQUIRECTANGULAR_MODE
+    skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+    skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+    skybox.material = skyboxMaterial;   
     const camera = new BABYLON.UniversalCamera('PlayerCamera', new BABYLON.Vector3(0, 2, -3), scene);
     camera.rotation.x = Math.PI / 5.5;
     // Temporary box for player
@@ -51,8 +59,6 @@ const createScene = function() {
     box.checkCollisions = true; 
     camera.checkCollisions = true; 
     camera.ellipsoid = new BABYLON.Vector3(0.5, 0.5, 0.5)
-    const sphere = BABYLON.MeshBuilder.CreateSphere('sphere', {}, scene);
-    sphere.position.z = -3;
     const ground = BABYLON.MeshBuilder.CreateGround('ground', {width: 10, height: 10}, scene);
     ground.position.y = -1;
     ground.checkCollisions = true;
@@ -65,6 +71,20 @@ const createScene = function() {
     ground3.position.z = -12;
     ground3.checkCollisions = true;
     ground3.IsGround = true
+    const ground4 = BABYLON.MeshBuilder.CreateGround('jump3', {width: 2, height:2}, scene);
+    ground4.position.z = -14;
+    ground4.position.y = 2;
+    ground4.checkCollisions = true;
+    ground4.IsGround = true
+    const ground5 = BABYLON.MeshBuilder.CreateGround('jump4', {width: 2, height:2}, scene);
+    ground5.position.z = -17;
+    ground5.checkCollisions = true;
+    ground5.IsGround = true
+    const ground6 = BABYLON.MeshBuilder.CreateGround('jump5', {width: 2, height:2}, scene);
+    ground6.position.z = -22;
+    ground6.position.x = 2
+    ground6.checkCollisions = true;
+    ground6.IsGround = true
     scene.gravity = new BABYLON.Vector3(0, -1, 0)
     return scene;
 }
@@ -72,14 +92,23 @@ const createScene = function() {
 const scene = createScene();
 
 engine.runRenderLoop(function() {
+    if (box.position.y < -400) {
+        box.position.z = 0
+        box.position.x = 0
+        timercount2 = 0;
+        box.position.y = 4;
+    }
     if (timer) timercount++;
     if (timer2) timercount2++;
     mouselocked = engine.isPointerLock;
-    box.moveWithCollisions(height.scale(drop))
     console.log(box.position)
+    box.moveWithCollisions(height.scale(drop))
     if (jump && jumpcount > 0) {
         box.moveWithCollisions(height.scale(-0.6))
     }
+    // let movement = velocity.scale(speed)
+    // movement.y = -drop / 10
+    // box.moveWithCollisions(movement)
     box.moveWithCollisions(velocity.scale(speed))
     scene.render();
 });
@@ -136,9 +165,9 @@ scene.onBeforeRenderObservable.add(() => {
     let multipler = 1
     if (input.shift) multipler = 1.5;
     speed = timercount/400 * multipler
+    speed = BABYLON.Scalar.Clamp(speed, 0, 0.3 * multipler)
     // console.log(timercount)
     // console.log(velocity)
-    speed = BABYLON.Scalar.Clamp(speed, 0, 0.3 * multipler)
     // console.log(speed)
 });
 
@@ -187,10 +216,11 @@ scene.onPointerObservable.add((pointerInfo) => {
                 movementX = event.movementX || 0;
                 movementY = event.movementY || 0;
                 // console.log(`MovementX: ${movementX}, MovementY: ${movementY}`);
-                camera.position.y += movementY/200
+                if (camera.rotation.x > 0.208) camera.position.y += movementY/200;
+                
                 camera.position.y = BABYLON.Scalar.Clamp(camera.position.y, 0.4, 3.2)
                 camera.rotation.x -= -(BABYLON.NormalizeRadians(movementY * 0.0009));
-                camera.rotation.x = BABYLON.Scalar.Clamp(camera.rotation.x, 0.208, 0.769)
+                camera.rotation.x = BABYLON.Scalar.Clamp(camera.rotation.x, -0.2, 0.769)
                 // console.log(camera.rotation.x)
                 // console.log(camera.position.y)
                 box.rotation.y += movementX / 500;
