@@ -21,7 +21,11 @@ let input = {
 let grounds = []
 let gl;
 let hit;
-
+let risinggrounds = []
+let direction1 = new BABYLON.Vector3(0, 1, 0)
+let direction2 = new BABYLON.Vector3(0, 1, 0)
+let direction3 = new BABYLON.Vector3(0, 1, 0)
+let direction = [direction1, direction2, direction3]
 
 let nomove;
 
@@ -96,6 +100,27 @@ const createScene = function() {
     ground6.checkCollisions = true;
     ground6.IsGround = true
     ground6.setEnabled(false)
+    const ground7 = BABYLON.MeshBuilder.CreateBox('jump5', {width: 2, height:1, depth: 2}, scene);
+    ground7.position.z = -24;
+    ground7.position.x = 2
+    ground7.position.y = 2
+    ground7.checkCollisions = true;
+    ground7.IsGround = true
+    ground7.setEnabled(false)
+    const ground8 = BABYLON.MeshBuilder.CreateBox('jump5', {width: 2, height:1, depth: 2}, scene);
+    ground8.position.z = -27;
+    ground8.position.x = 2
+    ground8.position.y = -1
+    ground8.checkCollisions = true;
+    ground8.IsGround = true
+    ground8.setEnabled(false)
+    const ground9 = BABYLON.MeshBuilder.CreateBox('jump5', {width: 2, height:1, depth: 2}, scene);
+    ground9.position.z = -30;
+    ground9.position.x = 2
+    ground9.position.y = 1
+    ground9.checkCollisions = true;
+    ground9.IsGround = true
+    ground9.setEnabled(false)
     scene.gravity = new BABYLON.Vector3(0, -1, 0)
     grounds.push(
         ground, 
@@ -103,7 +128,15 @@ const createScene = function() {
         ground3, 
         ground4, 
         ground5, 
-        ground6
+        ground6,
+        ground7,
+        ground8,
+        ground9
+    )
+    risinggrounds.push(
+        ground7,
+        ground8,
+        ground9
     )
     for (let i of grounds) {
         material.diffuseTexture = new BABYLON.Texture("https://i.postimg.cc/yNYqT9qP/pixil-frame-0.png", scene);
@@ -132,7 +165,7 @@ engine.runRenderLoop(function() {
     if (timer) timercount++;
     if (timer2) timercount2++;
     mouselocked = engine.isPointerLock;
-    console.log(box.position)
+    // console.log(box.position)
     box.moveWithCollisions(height.scale(drop))
     if (jump && jumpcount > 0) {
         box.moveWithCollisions(height.scale(-0.6))
@@ -239,13 +272,30 @@ scene.onBeforeRenderObservable.add(() => {
                     grounds[i + 1].setEnabled(true)
                     grounds[i + 2].setEnabled(true)
                 } else if (i == 0) {
-                    console.log(i)
                     grounds[i].setEnabled(true)
                     grounds[i + 1].setEnabled(true)
                     grounds[i + 2].setEnabled(true)
                 }
             }
         }
+    }
+    console.log(risinggrounds[0].position.y)
+    console.log(risinggrounds[1].position.y)
+    console.log(risinggrounds[2].position.y)
+    for(let i =0; i<risinggrounds.length; i++) {
+        if (risinggrounds[i].position.y > 6) {
+            direction[i] = new BABYLON.Vector3(0, -1, 0)
+        } else if (risinggrounds[i].position.y < -3) {
+            direction[i] = new BABYLON.Vector3(0, 1, 0)
+        }
+        if (hit != null) {
+            if (hit.pickedMesh == risinggrounds[i]) {
+                box.moveWithCollisions(direction[i].scale(0.05))
+            }
+        }
+        risinggrounds[i].position.addInPlace(direction[i].scale(0.05))
+        
+            
     }
 });
 
@@ -298,7 +348,7 @@ scene.onPointerObservable.add((pointerInfo) => {
                 
                 camera.position.y = BABYLON.Scalar.Clamp(camera.position.y, 0.4, 3.2)
                 camera.rotation.x -= -(BABYLON.NormalizeRadians(movementY * 0.0009));
-                camera.rotation.x = BABYLON.Scalar.Clamp(camera.rotation.x, -0.2, 0.769)
+                camera.rotation.x = BABYLON.Scalar.Clamp(camera.rotation.x, -0.6, 0.769)
                 // console.log(camera.rotation.x)
                 // console.log(camera.position.y)
                 box.rotation.y += movementX / 500;
