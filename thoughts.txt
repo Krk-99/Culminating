@@ -236,3 +236,22 @@
 // wow using ai to prompt ai for me how far the world has fallen 
 // just gonna search online for a skybox ai is stupid
 // time to make gui
+// switching the skybox
+// k this game is actually trash so time to make actually gameplay :)
+// first lets make it that the grounds are in a list or array
+// well that worked now 
+// got a break page cuz im tired of pausing
+// oops took quite a long break didnt i
+// oops forgot to put the other conditions if i is 1 or 0
+// yay first crash mid game 
+// and i know whats wrong :)
+// when i reached that platform theres no platform 2 spaces ahead meaning in list [ground, ground1, ground2, ground3, ground4, ground5, ground6]
+// when i reach ground 5 theres no value 2 indexes ahead hence grounds[i+2] doesnt exist hence game crashes as it reads a null value property
+// shoot gl is 1 greater than the max i value oops
+// yay code works YIPPEE
+// now make platforms look better
+// you know what time it is 
+// got food
+// thats it for today ig? may make a quick vid later actually ill just pause so i dont need to make a separate vid
+// trying to clock in a bit more before i sleep
+// well yea thats basically it for tonight, im gonna lock in dw this game is gonna be peak

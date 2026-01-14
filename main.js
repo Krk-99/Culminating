@@ -18,6 +18,10 @@ let input = {
     shift: false
 }
 
+let grounds = []
+let gl;
+let hit;
+
 
 let nomove;
 
@@ -44,7 +48,7 @@ const createScene = function() {
     const skybox = BABYLON.MeshBuilder.CreateBox('skyBox', {size: 1000.0}, scene)
     const skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene)
     skyboxMaterial.backFaceCulling = false;
-    skyboxMaterial.reflectionTexture = new BABYLON.Texture("unnamed.jpg", scene)
+    skyboxMaterial.reflectionTexture = new BABYLON.Texture("https://i.postimg.cc/zXwmXwR8/unnamed.jpg", scene)
     skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.FIXED_EQUIRECTANGULAR_MODE
     skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
     skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
@@ -52,6 +56,7 @@ const createScene = function() {
     const camera = new BABYLON.UniversalCamera('PlayerCamera', new BABYLON.Vector3(0, 2, -3), scene);
     camera.rotation.x = Math.PI / 5.5;
     // Temporary box for player
+    const material = new BABYLON.StandardMaterial("material", scene);
     const box = BABYLON.MeshBuilder.CreateSphere('player', {}, scene);
     box.position.z = 3;
     box.ellipsoid = new BABYLON.Vector3(0.5, 0.5, 0.5)
@@ -63,40 +68,66 @@ const createScene = function() {
     ground.position.y = -1;
     ground.checkCollisions = true;
     ground.IsGround = true
-    const ground2 = BABYLON.MeshBuilder.CreateGround('jump1', {width: 2, height:2}, scene);
+    ground.setEnabled(true)
+    const ground2 = BABYLON.MeshBuilder.CreateBox('jump1', {width: 2, height:1, depth: 2}, scene);
     ground2.position.z = -7;
     ground2.checkCollisions = true;
     ground2.IsGround = true
-    const ground3 = BABYLON.MeshBuilder.CreateGround('jump2', {width: 2, height:2}, scene);
+    ground2.setEnabled(false)
+    const ground3 = BABYLON.MeshBuilder.CreateBox('jump2', {width: 2, height:1, depth: 2}, scene);
     ground3.position.z = -12;
     ground3.checkCollisions = true;
     ground3.IsGround = true
-    const ground4 = BABYLON.MeshBuilder.CreateGround('jump3', {width: 2, height:2}, scene);
+    ground3.setEnabled(false)
+    const ground4 = BABYLON.MeshBuilder.CreateBox('jump3', {width: 2, height:1, depth: 2}, scene);
     ground4.position.z = -14;
     ground4.position.y = 2;
     ground4.checkCollisions = true;
     ground4.IsGround = true
-    const ground5 = BABYLON.MeshBuilder.CreateGround('jump4', {width: 2, height:2}, scene);
+    ground4.setEnabled(false)
+    const ground5 = BABYLON.MeshBuilder.CreateBox('jump4', {width: 2, height:1, depth: 2}, scene);
     ground5.position.z = -17;
     ground5.checkCollisions = true;
     ground5.IsGround = true
-    const ground6 = BABYLON.MeshBuilder.CreateGround('jump5', {width: 2, height:2}, scene);
+    ground5.setEnabled(false)
+    const ground6 = BABYLON.MeshBuilder.CreateBox('jump5', {width: 2, height:1, depth: 2}, scene);
     ground6.position.z = -22;
     ground6.position.x = 2
     ground6.checkCollisions = true;
     ground6.IsGround = true
+    ground6.setEnabled(false)
     scene.gravity = new BABYLON.Vector3(0, -1, 0)
+    grounds.push(
+        ground, 
+        ground2, 
+        ground3, 
+        ground4, 
+        ground5, 
+        ground6
+    )
+    for (let i of grounds) {
+        material.diffuseTexture = new BABYLON.Texture("https://i.postimg.cc/yNYqT9qP/pixil-frame-0.png", scene);
+        i.material = material
+    }
+    gl = grounds.length
+
+    console.log(grounds)
     return scene;
 }
+
+
+
 
 const scene = createScene();
 
 engine.runRenderLoop(function() {
-    if (box.position.y < -400) {
+    if (box.position.y < -50) {
         box.position.z = 0
         box.position.x = 0
         timercount2 = 0;
+        timercount = 0;
         box.position.y = 4;
+        reset();
     }
     if (timer) timercount++;
     if (timer2) timercount2++;
@@ -124,6 +155,18 @@ const camera = scene.getCameraByName('PlayerCamera');
 const ground = scene.getMeshByName('ground')
 camera.parent = box;
 
+const reset = function() {
+    for (let i of grounds) {
+        if (i === ground) {
+            i.setEnabled(true)
+        } else {
+            i.setEnabled(false)
+        }
+    }
+    timercount = 0;
+    timercount2 = 0;
+
+}
 
 canvas.onclick = function() {
     canvas.requestPointerLock = canvas.requestPointerLock || canvas.msRequestPointerLock || canvas.mozRequestPointerLock || canvas.webkitRequestPointerLock;
@@ -172,11 +215,46 @@ scene.onBeforeRenderObservable.add(() => {
 });
 
 scene.onBeforeRenderObservable.add(() => {
+    if (hit != null) {
+        for (let i = 0; i<gl; i++) {
+            if (hit.pickedMesh === grounds[i]) {
+                if (gl - i == 1) {
+                    grounds[i - 2].setEnabled(true)
+                    grounds[i - 1].setEnabled(true)
+                    grounds[i].setEnabled(true)
+                } else if (gl - i == 2) {
+                    grounds[i - 2].setEnabled(true)
+                    grounds[i - 1].setEnabled(true)
+                    grounds[i].setEnabled(true)
+                    grounds[i + 1].setEnabled(true)
+                } else if (i > 1) {
+                    grounds[i - 2].setEnabled(true)
+                    grounds[i - 1].setEnabled(true)
+                    grounds[i].setEnabled(true)
+                    grounds[i + 1].setEnabled(true)
+                    grounds[i + 2].setEnabled(true)
+                } else if (i == 1) {
+                    grounds[i - 1].setEnabled(true)
+                    grounds[i].setEnabled(true)
+                    grounds[i + 1].setEnabled(true)
+                    grounds[i + 2].setEnabled(true)
+                } else if (i == 0) {
+                    console.log(i)
+                    grounds[i].setEnabled(true)
+                    grounds[i + 1].setEnabled(true)
+                    grounds[i + 2].setEnabled(true)
+                }
+            }
+        }
+    }
+});
+
+scene.onBeforeRenderObservable.add(() => {
     const origin = box.position.clone()
     origin.y -= box.ellipsoid.y
     const direction = new BABYLON.Vector3(0, -1, 0)
     const ray = new BABYLON.Ray(origin, direction, 0.1)
-    const hit = scene.pickWithRay(ray, (mesh) => {
+    hit = scene.pickWithRay(ray, (mesh) => {
         return mesh.IsGround
     });
     if (hit.pickedMesh) {
