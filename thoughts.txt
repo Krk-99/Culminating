@@ -260,3 +260,35 @@
 // hmm i dont want to do that right now actually what i should do is make gameplay
 // hmm platform move 
 // gtg school time
+// added some new songs to playlist
+// sry got distracted 
+// procastinating my physics culm
+// im eating as well so im getting distracted
+// ok time to lock in 
+// blasting music but making sure that u guys dont get blasted as well 
+// time to make a collision system YAY
+// k current thought process is first make the rays work perfectly on detecting ground and then disable collision detection by babylon and create my own
+// first i need to isolate the beginning ground and the other boxes that are "grounds"
+// kinda redundant now that i think abt it but it'll work for now
+// wait actually dont i alr have a ground system? wait a min
+// theoretically my gravity stops once a mesh is detected below the sphere
+// i need to move the ray to detect before movement is applied  
+// im stuck
+// im gonna extend the ray from one to like 5
+// actually wait since im shooting it from the bottom of the sphere i dont need to calculate the height of sphere from displaced
+// k well its working if ray length is above 0.4 im gonna take a break now 
+// gonna make rays to stop movement thru walls
+// actually im gonna finish up the ground rays
+// since im creating the rays each time during a loop im wasting resources :(
+// i have no clue why i have 2 of them sooo im gonna have to rewatch my footage later on to see why
+// IF i dont have the issue appear before i finish
+// i completely bsed all that but i think it works
+// gotta shovel snow :( ill pause this time
+// wow that was tiring i didnt finish the driveway yet but im tired so im taking a break
+// my logic is messed up i need to organize my thoughts
+// quick break for hot cocoa
+// finished my hot cocoa back to work (i also had to shovel a bit)
+// mb got distracted again
+// im stuck :(
+// we are using AI im at a block
+// first before analyzing gemini's changes to my code make sure its version works and its not bsing
