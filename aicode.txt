@@ -1,0 +1,273 @@
+import * as BABYLON from '@babylonjs/core';
+
+const canvas = document.getElementById('renderCanvas');
+const engine = new BABYLON.Engine(canvas, true);
+
+// --- INPUTS ---
+let input = {
+    forward: false,
+    backward: false,
+    left: false,
+    right: false,
+    jump: false,
+    shift: false
+};
+
+// --- CONFIGURATION ---
+const PLAYER_SPEED = 0.15;
+const RUN_MULTIPLIER = 1.5;
+const JUMP_FORCE = 0.5;
+const GRAVITY = -0.015;
+const TERMINAL_VELOCITY = -0.5;
+
+// --- STATE ---
+let verticalVelocity = 0;
+let isGrounded = false;
+let movementX = 0;
+let movementY = 0;
+let mouselocked = false;
+
+const createScene = function() {
+    const scene = new BABYLON.Scene(engine);
+    scene.collisionsEnabled = true;
+    scene.gravity = new BABYLON.Vector3(0, -0.9, 0);
+    scene.createDefaultLight(true, true);
+
+    // Skybox
+    const skybox = BABYLON.MeshBuilder.CreateBox('skyBox', { size: 1000.0 }, scene);
+    const skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
+    skyboxMaterial.backFaceCulling = false;
+    skyboxMaterial.reflectionTexture = new BABYLON.Texture("https://i.postimg.cc/zXwmXwR8/unnamed.jpg", scene);
+    skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.FIXED_EQUIRECTANGULAR_MODE;
+    skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+    skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+    skybox.material = skyboxMaterial;
+
+    // Player (Sphere)
+    const box = BABYLON.MeshBuilder.CreateSphere('player', { diameter: 1 }, scene);
+    box.position.y = 5;
+    box.position.z = 3;
+    box.checkCollisions = true;
+    box.ellipsoid = new BABYLON.Vector3(0.5, 0.5, 0.5); // Collider size
+    box.isPickable = false;
+    
+    // Camera
+    const camera = new BABYLON.UniversalCamera('PlayerCamera', new BABYLON.Vector3(0, 0.5, 0), scene);
+    camera.parent = box; // Attach camera to player
+    camera.minZ = 0.1;
+
+    // Material for grounds
+    const material = new BABYLON.StandardMaterial("material", scene);
+    material.diffuseTexture = new BABYLON.Texture("https://i.postimg.cc/yNYqT9qP/pixil-frame-0.png", scene);
+
+    // --- LEVEL GENERATION ---
+    const grounds = [];
+    
+    // Helper to create ground with physics
+    const createGroundBlock = (name, x, y, z, width, active) => {
+        const blk = BABYLON.MeshBuilder.CreateBox(name, { width: width, height: 1, depth: 2 }, scene);
+        blk.position.set(x, y, z);
+        blk.checkCollisions = true;
+        blk.IsGround = true; // Custom tag
+        blk.material = material;
+        blk.setEnabled(active);
+        grounds.push(blk);
+        return blk;
+    };
+
+    // Main Ground
+    const ground = BABYLON.MeshBuilder.CreateGround('ground', { width: 10, height: 10 }, scene);
+    ground.position.y = -1;
+    ground.checkCollisions = true;
+    ground.IsGround = true;
+    ground.material = material;
+    grounds.push(ground);
+
+    // Platforms
+    createGroundBlock('jump1', 0, 0, -7, 2, false);
+    createGroundBlock('jump2', 0, 0, -12, 2, false);
+    createGroundBlock('jump3', 0, 2, -14, 2, false);
+    createGroundBlock('jump4', 0, 0, -17, 2, false);
+    
+    // Moving platforms
+    const moving1 = createGroundBlock('move1', 2, 0, -22, 2, false);
+    const moving2 = createGroundBlock('move2', 2, 2, -24, 2, false);
+    const moving3 = createGroundBlock('move3', 2, -1, -27, 2, false);
+    const moving4 = createGroundBlock('move4', 2, 1, -30, 2, false);
+
+    // Tag them for movement logic
+    moving1.isRising = true;
+    moving2.isRising = true;
+    moving3.isRising = true;
+    moving4.isRising = true;
+
+    return scene;
+};
+
+const scene = createScene();
+const box = scene.getMeshByName('player');
+const camera = scene.getCameraByName('PlayerCamera');
+const allGrounds = scene.meshes.filter(m => m.IsGround);
+const movingGrounds = scene.meshes.filter(m => m.isRising);
+
+// --- HELPER FUNCTIONS ---
+
+// Simplified Raycast to check if player is on ground
+const checkGround = () => {
+    const origin = box.position.clone();
+    // Start ray slightly below center, point down
+    const ray = new BABYLON.Ray(origin, new BABYLON.Vector3(0, -1, 0), 0.6); 
+    
+    // Visualizer for debugging (Uncomment to see the ray)
+    // BABYLON.RayHelper.CreateAndShow(ray, scene, new BABYLON.Color3(1, 0, 0));
+
+    const hit = scene.pickWithRay(ray, (mesh) => {
+        return mesh.IsGround && mesh.isEnabled();
+    });
+
+    return (hit.pickedMesh && hit.distance < 0.6); // 0.5 is radius + 0.1 buffer
+};
+
+// Function to handle showing/hiding platforms based on distance
+const updatePlatformVisibility = () => {
+    // Current logic: Show platforms close to the player
+    // This replicates your logic of index-2, index+2
+    // A simpler way is just distance check:
+    allGrounds.forEach(g => {
+        if(g.name === 'ground') return; // Always show start
+        const dist = BABYLON.Vector3.Distance(box.position, g.position);
+        if(dist < 10) {
+            g.setEnabled(true);
+        } else {
+            g.setEnabled(false);
+        }
+    });
+};
+
+// --- GAME LOOP ---
+
+scene.onBeforeRenderObservable.add(() => {
+    const deltaTime = engine.getDeltaTime();
+
+    // 1. Reset Logic
+    if (box.position.y < -50) {
+        box.position.set(0, 4, 0);
+        verticalVelocity = 0;
+    }
+
+    // 2. Platform Movement Logic
+    movingGrounds.forEach((ground) => {
+        if (!ground.dir) ground.dir = -1; // Default direction
+        
+        if (ground.position.y > 6) ground.dir = -1;
+        if (ground.position.y < -3) ground.dir = 1;
+        
+        ground.position.y += 0.05 * ground.dir;
+    });
+
+    updatePlatformVisibility();
+
+    // 3. Movement Calculation
+    let velocity = new BABYLON.Vector3(0, 0, 0);
+
+    // Get camera direction but flatten it (we don't want to fly up when looking up)
+    let forward = camera.getDirection(BABYLON.Vector3.Forward());
+    forward.y = 0;
+    forward.normalize();
+    
+    let right = camera.getDirection(BABYLON.Vector3.Right());
+    right.y = 0;
+    right.normalize();
+
+    let speed = PLAYER_SPEED;
+    if (input.shift) speed *= RUN_MULTIPLIER;
+
+    if (input.forward) velocity.addInPlace(forward.scale(speed));
+    if (input.backward) velocity.addInPlace(forward.scale(-speed));
+    if (input.right) velocity.addInPlace(right.scale(speed));
+    if (input.left) velocity.addInPlace(right.scale(-speed));
+
+    // 4. Gravity & Jumping
+    isGrounded = checkGround();
+
+    if (isGrounded) {
+        // If grounded, stop falling, but keep a tiny downward force to stick to slopes
+        if (verticalVelocity < 0) {
+            verticalVelocity = -0.1; 
+        }
+        
+        if (input.jump) {
+            verticalVelocity = JUMP_FORCE;
+            isGrounded = false; // Immediately unground
+        }
+    } else {
+        // Apply Gravity
+        verticalVelocity += GRAVITY;
+    }
+
+    // Clamp terminal velocity (don't fall infinitely fast)
+    if(verticalVelocity < TERMINAL_VELOCITY) verticalVelocity = TERMINAL_VELOCITY;
+
+    // Apply vertical force to velocity
+    velocity.y = verticalVelocity;
+
+    // 5. Apply Movement
+    box.moveWithCollisions(velocity);
+});
+
+// --- CAMERA CONTROLS ---
+
+scene.onPointerObservable.add((pointerInfo) => {
+    mouselocked = engine.isPointerLock;
+    if (mouselocked && pointerInfo.type === BABYLON.PointerEventTypes.POINTERMOVE) {
+        const event = pointerInfo.event;
+        movementX = event.movementX || 0;
+        movementY = event.movementY || 0;
+
+        // Rotate Player Body (Y-axis)
+        box.rotation.y += movementX / 500;
+
+        // Rotate Camera (X-axis)
+        camera.rotation.x += movementY / 500;
+        // Clamp Camera Look Up/Down
+        camera.rotation.x = BABYLON.Scalar.Clamp(camera.rotation.x, -Math.PI / 4, Math.PI / 4);
+    }
+});
+
+canvas.onclick = function() {
+    canvas.requestPointerLock = canvas.requestPointerLock || canvas.msRequestPointerLock;
+    if (canvas.requestPointerLock) {
+        canvas.requestPointerLock();
+    }
+};
+
+window.addEventListener('resize', function() {
+    engine.resize();
+});
+
+// --- KEYBOARD EVENTS ---
+
+const updateInput = (key, isPressed) => {
+    const k = key.toLowerCase();
+    if (k === 'w') input.forward = isPressed;
+    if (k === 's') input.backward = isPressed;
+    if (k === 'a') input.left = isPressed;
+    if (k === 'd') input.right = isPressed;
+    if (k === ' ') input.jump = isPressed;
+    if (k === 'shift') input.shift = isPressed;
+};
+
+window.addEventListener('keydown', (e) => updateInput(e.key, true));
+window.addEventListener('keyup', (e) => updateInput(e.key, false));
+window.addEventListener("keydown", (e) => {
+    let keyText = document.getElementById("keyText");
+    if(keyText) keyText.textContent = `Key: ${e.key}`;
+});
+window.addEventListener("keyup", () => {
+    let keyText = document.getElementById("keyText");
+    if(keyText) keyText.textContent = "Press a key";
+});
+
+engine.runRenderLoop(function() {
+    scene.render();
+});

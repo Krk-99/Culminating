@@ -292,3 +292,6 @@
 // im stuck :(
 // we are using AI im at a block
 // first before analyzing gemini's changes to my code make sure its version works and its not bsing
+// whoever thought ai is smart is kinda stupid im taking a long break gotta do some physics and then ill analyse ais code and see what i could us
+// it pretty good at refactoring but bro actually said nah im too lazy to help u make a collision code just use the built in one instead 
+// and acted like he did a good job this guy is what u call pro :(
