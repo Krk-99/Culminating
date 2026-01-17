@@ -295,3 +295,41 @@
 // whoever thought ai is smart is kinda stupid im taking a long break gotta do some physics and then ill analyse ais code and see what i could us
 // it pretty good at refactoring but bro actually said nah im too lazy to help u make a collision code just use the built in one instead 
 // and acted like he did a good job this guy is what u call pro :(
+// umm good morning this day one of the next 2 days of making this game into an actual game this gonna be long but yea first
+// we need to fix the collision systems im gonna refactor the code using ai's suggestions from here after im done the gameplay or prob after 
+// collision since it'll be more simpler to make the game using the helpers and stuff so yea lets start this joruney 
+// i wonder if ill actually reach the end of my liked songs playlist 
+// LETS GOOO ITS CONSISTENT, so hit.distance isnt accurate apparently, then using box.position.y - hit.pickedPoint.y actually gave me the distance till collision and if i set the box.position.y - maxdrop then that should be ground pos
+// AND IT WORKED LETS GO GOD!!!
+// IM SO HAPPY THANK GOD THANK YOU SO MUCH 
+// AND THE COLLISION SYSTEM WORKS 
+// AND ONLY IN 20 MINUTES!!!! wow
+// k i need to make the other sides of collision but that should be easier
+// im so gonna need ai to help refactor this cuz damn my lines are so redundant
+// im an idiot why am i checking if a mesh is pickable in a picking function 
+// how can it even  be picked without having is pickable true
+// wait a min dont i need one for every cardinal direction oh noooo
+// currently im running like 3 for every direction and im only using the 4 main directions which means 12 rays, but i need to double that :(
+// gonna be a long one so imma pause
+// back
+// im stuck on why all three rays are at the same place soo imma take a break
+// actually since the recording is alr long imma end it here for now and start a new one later\
+// k i made some progress off cam
+// i realized that by setting a predicate function in pickWithRay i override the isPickable property of an object and
+// hence the player i
+// oh shoot i stopped at why all three cams are at the same place, k um i thought it had to do smth with origin variable
+// so i decided to directly set it to box.position.clone().addInPlace.... and that worked, but then i thought hmm where did origin change
+// cuz i couldnt find any access that changed the value of the variable so i decided that maybe its smth to do with copyFrom 
+// so i removed that and put a equal sign and it worked hence why only backward rays have box.position and all the others still have origin
+// the top ones i havent changed yet but it seemed to work not fully sure tho but ill get around to it after i figure out the current problem
+// after that one of the movement rays would auto trigger and disable a key so one of the movement wouldnt work so i couldnt figure out why 
+// so i printed out what it was hitting and it was the player object which i disabled picking from but predicate functions override that
+// (i asked ai how it was possible for a code isPickable to be overriden and it told me predicates are able to do that) since my predicate is set to
+// if !mesh.isGround (mb wrote the wrong condition) well not wrong just not the term i put in code which player passes so added an extra filter !mesh === ground
+// and that happedned and now im stuck here it stops at the middle of the sphere dk why<---------------
+// ok i thought i messed up the placement of the rays but apparently i didnt and that wht caused this ^
+// i def need all 8 cardinal directions aight time to spam some spamming
+// wait if its the sum cant i just add the direction vectors?
+// AND THATS A WRAP LETS GOOO
+// COLLISION SYSTEM MADE THANK YOU GOD!!!!
+// and now time for guess what refactoring and making gameplay 
