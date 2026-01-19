@@ -333,3 +333,23 @@
 // AND THATS A WRAP LETS GOOO
 // COLLISION SYSTEM MADE THANK YOU GOD!!!!
 // and now time for guess what refactoring and making gameplay 
+// time to refactor the code so life can be easier
+// the collision system isnt perfect but its good enough for a custom made collision system 
+// only have 1 day left soo dont got much of a choice now do i
+// i HATE ads tho it keeps stuff free why do we gotta disturb us mid work, well actually i dont usually notice them but still
+// idk why im even saying this its just im tired from culminatings and robotics, i even fell asleep yesterday from 7-10 :(
+// does that width: width part even work? hmm hopefully its not calling the variable
+// thinking if i still need isGround oh wait actually i do cuz i need it for my raycasting
+// well anyways the difference was in update log and matrix order nothing substantial soo basically the helper works and we can spam that
+// i gotta go pray so gotta quickly do this
+// k imma pray then come back
+// k so now imma work on models and stuff soo to blender we goooo
+// i got no clue on how to make a kirby looking model in blender so lets go to youtube
+// i used to make models on blender for my roblox games so i know my way around a bit hopes this works out
+// gonna stop the recording here and make another one cuz this ones getting too big
+// aight time to model
+// leaving the rest to tomorrow me and going to sleep gn
+// so stuff happened with the modeling and lets just say that it aint happening soo lets continue with the models of trees and stones
+// skipping this going to game ui
+// gtg sleep so hopefully sir gives me another day
+// oh yea i didnt finish my other coding

@@ -1,4 +1,6 @@
 import * as BABYLON from '@babylonjs/core';
+import * as GUI from '@babylonjs/gui'
+import '@babylonjs/loaders/glTF/2.0/'
 const canvas = document.getElementById('renderCanvas');
 const engine = new BABYLON.Engine(canvas);
 
@@ -50,9 +52,14 @@ let pos;
 let maxdrop;
 let nomove;
 
+let rocks;
+let trees;
+let rocky = [];
+let forest = [];
+
 // Gravity and physics variables
 let gravity = 10;
-let height = new BABYLON.Vector3(0,0,0)
+let height = new BABYLON.Vector3(0,-1,0)
 let timer = false;
 let timer2 = false;
 let timercount = 0;
@@ -64,13 +71,15 @@ let isGrounded = false;
 let jumpcount = 5
 let jump = false;
 
- 
+
 
 const createScene = function() {
-    // Camera and light
     const scene = new BABYLON.Scene(engine);
-    scene.collisionsEnabled = true;
+    // Camera and light
     scene.createDefaultLight(true, true);
+    const camera = new BABYLON.UniversalCamera('PlayerCamera', new BABYLON.Vector3(0, 2, -3), scene);
+    camera.rotation.x = Math.PI / 5.5;
+    // Skybox
     const skybox = BABYLON.MeshBuilder.CreateBox('skyBox', {size: 1000.0}, scene)
     const skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene)
     skyboxMaterial.backFaceCulling = false;
@@ -79,117 +88,101 @@ const createScene = function() {
     skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
     skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
     skybox.material = skyboxMaterial;   
-    const camera = new BABYLON.UniversalCamera('PlayerCamera', new BABYLON.Vector3(0, 2, -3), scene);
-    camera.rotation.x = Math.PI / 5.5;
     // Temporary box for player
-    const material = new BABYLON.StandardMaterial("material", scene);
+    const createGroundBlock = (name, x, y, z, width, height, depth, active, moving) => {
+        const blk = new BABYLON.MeshBuilder.CreateBox(name, {width: width, height: height, depth: depth}, scene)
+        blk.position.x = x
+        blk.position.y = y
+        blk.position.z = z
+        blk.setEnabled(active)
+        if (moving) {
+            risinggrounds.push(blk)
+        }
+        blk.IsGround = true
+        grounds.push(blk)
+        return blk
+    }
+    BABYLON.ImportMeshAsync('models/Rocks.glb', scene).then((result) => {
+        const masterRoot = result.meshes[0]
+        const masterRocks = result.meshes[1]
+        masterRoot.setEnabled(false)
+        const createRockInstances = (name) => {
+            const rockNode = new BABYLON.TransformNode(name + "_root", scene)
+            const rock = masterRocks.createInstance(name + "_rock")
+            rock.parent = rockNode
+            return rockNode
+        }
+        const createRocks = (name, x, y, z, scaling) => {
+            const rock = createRockInstances(name)
+            rock.position = new BABYLON.Vector3(x, y, z)
+            rock.scaling = new BABYLON.Vector3(scaling, scaling, scaling)
+            rocky.push(rock)
+            return rock
+        }
+        createRocks('rock1', 5, -1, -5, 3)
+    })
+    BABYLON.ImportMeshAsync('models/Tree.glb', scene).then((result) => {
+        const masterRoot = result.meshes[0];
+        const masterTrunk = result.meshes[1];
+        const masterLeaves = result.meshes[2]; 
+        masterRoot.setEnabled(false);
+        
+        const createTreeInstances = (name) => {
+            const instanceRoot = new BABYLON.TransformNode(name + "_root", scene);
+            var trunkInstance = masterTrunk.createInstance(name + "_trunk");
+            var leavesInstance = masterLeaves.createInstance(name + "_leaves");
+            
+            trunkInstance.parent = instanceRoot;
+            leavesInstance.parent = instanceRoot;
+            
+            return instanceRoot;
+        };
+        
+        const createTrees = (name, x, y, z, scaling) => {
+            const tree = createTreeInstances(name);
+            tree.position = new BABYLON.Vector3(x, y, z);
+            tree.scaling = new BABYLON.Vector3(scaling, scaling, scaling);
+            forest.push(tree);
+            return tree;
+        };
+        
+        createTrees('tree', -5, -0.7, -1, 0.5);
+        createTrees('tree1', 5, -0.7, -1, 0.5);
+    });
+    
     const box = BABYLON.MeshBuilder.CreateSphere('player', {}, scene);
     box.position.z = 3;
     box.isPickable = false;
-    // box.ellipsoid = new BABYLON.Vector3(0.5, 0.5, 0.5)
-    height.addInPlace(box.getDirection(new BABYLON.Vector3(0, -1, 0)))
-    // box.checkCollisions = true; 
-    // camera.checkCollisions = true; 
-    camera.ellipsoid = new BABYLON.Vector3(0.5, 0.5, 0.5)
     const ground = BABYLON.MeshBuilder.CreateGround('ground', {width: 10, height: 10}, scene);
     ground.position.y = -1;
-    // ground.checkCollisions = true;
     ground.IsGround = true
     ground.fakeground = false
     ground.setEnabled(true)
-    const ground2 = BABYLON.MeshBuilder.CreateBox('jump1', {width: 2, height:1, depth: 2}, scene);
-    ground2.position.z = -7;
-    // ground2.checkCollisions = true;
-    ground2.IsGround = true
-    ground2.setEnabled(false)
-    ground2.fakeground = true
-    const ground3 = BABYLON.MeshBuilder.CreateBox('jump2', {width: 2, height:1, depth: 2}, scene);
-    ground3.position.z = -12;
-    // ground3.checkCollisions = true;
-    ground3.IsGround = true
-    ground3.setEnabled(false)
-    ground3.fakeground = true
-    const ground4 = BABYLON.MeshBuilder.CreateBox('jump3', {width: 2, height:1, depth: 2}, scene);
-    ground4.position.z = -14;
-    ground4.position.y = 2;
-    // ground4.checkCollisions = true;
-    ground4.IsGround = true
-    ground4.fakeground = true
-    ground4.setEnabled(false)
-    const ground5 = BABYLON.MeshBuilder.CreateBox('jump4', {width: 2, height:1, depth: 2}, scene);
-    ground5.position.z = -17;
-    // ground5.checkCollisions = true;
-    ground5.IsGround = true
-    ground5.fakeground = true
-    ground5.setEnabled(false)
-    const ground6 = BABYLON.MeshBuilder.CreateBox('jump5', {width: 2, height:1, depth: 2}, scene);
-    ground6.position.z = -22;
-    ground6.position.x = 2
-    // ground6.checkCollisions = true;
-    ground6.IsGround = true
-    ground6.fakeground = true
-    ground6.setEnabled(false)
-    const ground7 = BABYLON.MeshBuilder.CreateBox('jump5', {width: 2, height:1, depth: 2}, scene);
-    ground7.position.z = -25;
-    ground7.position.x = 2
-    ground7.position.y = 2
-    // ground7.checkCollisions = true;
-    ground7.fakeground = true
-    ground7.IsGround = true
-    ground7.setEnabled(false)
-    const ground8 = BABYLON.MeshBuilder.CreateBox('jump5', {width: 2, height:1, depth: 2}, scene);
-    ground8.position.z = -28;
-    ground8.position.x = 2
-    ground8.position.y = -1
-    // ground8.checkCollisions = true;
-    ground8.IsGround = true
-    ground8.fakeground = true
-    ground8.setEnabled(false)
-    const ground10 = BABYLON.MeshBuilder.CreateBox('jump5', {width: 2, height:1, depth: 2}, scene);
-    ground10.position.z = -2;
-    ground10.position.x = 2
-    ground10.position.y = 0
-    ground10.IsGround = true
-    ground10.fakeground = true
-    ground8.setEnabled(false)
-    const ground9 = BABYLON.MeshBuilder.CreateBox('jump5', {width: 2, height:1, depth: 2}, scene);
-    ground9.position.z = -31;
-    ground9.position.x = 2;
-    ground9.position.y = 1;
-    // ground9.checkCollisions = true;
-    ground9.IsGround = true
-    ground9.fakeground = true
-    ground9.setEnabled(false)
-    scene.gravity = new BABYLON.Vector3(0, -1, 0)
-    grounds.push(
-        ground, 
-        ground2, 
-        ground3, 
-        ground4, 
-        ground5, 
-        ground6,
-        ground7,
-        ground8,
-        ground9
-    )
-    risinggrounds.push(
-        ground7,
-        ground8,
-        ground9
-    )
+    grounds.push(ground)
+    createGroundBlock('plat1', 0, 0, -7, 2, 1, 2, false, false)
+    createGroundBlock('plat2', 0, 0, -12, 2, 1, 2, false, false)
+    createGroundBlock('plat3', 0, 2, -14, 2, 1, 2, false, false)
+    createGroundBlock('plat4', 0, 0, -17, 2, 1, 2, false, false)
+    createGroundBlock('plat5', 2, 0, -22, 2, 1, 2, false, false)
+    createGroundBlock('plat6', 2, 2, -25, 2, 1, 2, false, true)
+    createGroundBlock('plat7', 2, -1, -28, 2, 1,  2, false, true)
+    createGroundBlock('plat8', 2, 1, -31, 2, 1, 2, false, true)
+    createGroundBlock('plat9', 2, 0, -34, 2, 1, 2, false, false)
+    const material = new BABYLON.StandardMaterial("material", scene);
     for (let i of grounds) {
         material.diffuseTexture = new BABYLON.Texture("https://i.postimg.cc/yNYqT9qP/pixil-frame-0.png", scene);
         i.material = material
     }
     gl = grounds.length
+
+
     return scene;
 }
 
 
-
-
 const scene = createScene();
-
+const assetManager = new BABYLON.AssetsManager(scene);
+const meshtask = assetManager.addMeshTask('loadRock', 'rock', "models/", "Rocks.glb", )
 engine.runRenderLoop(function() {
     if (box.position.y < -50) {
         box.position.z = 0
@@ -199,15 +192,11 @@ engine.runRenderLoop(function() {
         box.position.y = 4;
         reset();
     }
+    scene.getMeshByName('skyBox').position = box.position
     if (timer) timercount++;
     if (timer2) timercount2++;
     mouselocked = engine.isPointerLock;
-    if (jump && !isGrounded) {
-        jumpcount--;
-    }
-    // let movement = velocity.scale(speed)
-    // movement.y = -drop / 10
-    // box.moveWithCollisions(movement)
+    if (jump && !isGrounded) jumpcount--;
     scene.render();
 });
 
@@ -234,6 +223,7 @@ const reset = function() {
     timercount2 = 0;
     
 }
+
 
 canvas.onclick = function() {
     canvas.requestPointerLock = canvas.requestPointerLock || canvas.msRequestPointerLock || canvas.mozRequestPointerLock || canvas.webkitRequestPointerLock;
@@ -441,8 +431,6 @@ scene.onBeforeRenderObservable.add(() => {
     }
     if (hitf.pickedMesh) {
         input.forward = false 
-        console.log(hitf.hit)
-        console.log(hitf.pickedMesh)
     };
     if (hitfr.pickedMesh) {
         input.forward = false 
@@ -587,6 +575,7 @@ scene.onBeforeRenderObservable.add(() => {
             } 
         }
     }
+    // console.log(hit.pickedMesh)
     if (jump && jumpcount > 0) {
         if (hitu.pickedMesh) jumpcount = 0; 
         box.moveWithCollisions(height.scale(-0.6))
@@ -610,10 +599,7 @@ scene.onBeforeRenderObservable.add(() => {
     }
     // this sets the isgrounded feature
     if (hit != null && hit.pickedMesh != null){
-        // console.log(hit.pickedMesh)
         if (hit.pickedMesh.IsGround && hit.distance < 0.7) {
-            // console.log(isGrounded)
-            // isGrounded = true;
         } else {
             isGrounded = false
         }
@@ -636,15 +622,7 @@ scene.onBeforeRenderObservable.add(() => {
             // heighttrack +=  pos - box.position.y;
             // maxdrop = box.position.clone().addInPlace(new BABYLON.Vector3(0, -(collide), 0))
             box.moveWithCollisions(height.scale(drop)) 
-            // console.log(collide) 
-            // console.log(hit.distance) 
             maxdrop = box.position.y - hit.pickedPoint.y
-            // smth wrong with this part
-            // console.log(box.position.y)
-            // console.log(hit.pickedPoint.y)
-            // console.log(maxdrop)
-            console.log(box.position.y - maxdrop)
-            // console.log(box.position.y)
             if (box.position.y < (box.position.y + 0.5 - maxdrop)){
                 box.position.y = box.position.y - maxdrop + 0.5
                 isGrounded = true
@@ -718,10 +696,7 @@ window.addEventListener('keydown', function(event) {
         // inputs = true;  
     }
     if (key === 'k') {
-        console.log("Box Y")
-        console.log(box.position.y)
-        console.log("collide distance")
-        console.log(collide)
+
     };
     if (event.shiftKey) {
         input.shift = true
@@ -766,3 +741,13 @@ window.addEventListener("keyup", () => {
     let keyText = document.getElementById("keyText");   
     keyText.textContent = "Press a key";
 });
+
+const button = document.getElementById('button1')
+const bg = document.getElementById('background')
+const title = document.getElementById('title')
+
+button.addEventListener('click', function() {
+    button.style.visibility = "hidden"
+    bg.style.visibility = "hidden"
+    title.style.visibility = "hidden"
+})

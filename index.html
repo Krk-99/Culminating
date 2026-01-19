@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Babylon.js Tutorial</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sniglet:wght@400;800&display=swap" rel="stylesheet">
     <style>
         html, body {
             overflow: hidden;
@@ -27,6 +30,64 @@
             z-index: 1;
             pointer-events: none;
         }
+        .buttons {
+            position: absolute;
+            background-color: #63f030; /* Base Red */
+            color: white;
+            font-family: 'Press Start 2P', cursive; /* Or any pixel font */
+            font-size: 1rem;
+            top: 80%;
+            left: 45%;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #0e5c28, /* Darker yellow ledge */
+              0 15px 20px rgba(0,0,0,0.2); /* Drop shadow */
+            transition: transform 0.1s, box-shadow 0.1s;
+            /* position: relative; */
+            
+        }
+        .buttons:hover {
+            background-color: #60c73d; 
+            transform: translateY(-2px); /* Moves up slightly */
+            box-shadow: 0 10px 0 #355520,
+                        0 20px 20px rgba(0,0,0,0.2);
+        }   
+        .buttons:active {
+            /* Move button down to cover the external shadow */
+                transform: translate(0px, 8px);
+                /* Remove external shadow to simulate pressing flat */
+                box-shadow: 0 0 0 #144c22,   /* Ledge disappears */
+                      0 0 5px rgba(0,0,0,0.2); /* Drop shadow tightens */
+        }
+        #background {
+            background-color: aliceblue;
+            width: 100%;
+            height: 100vh;
+            position: absolute;     
+        }
+        .HomeUI {
+            width: 100%;
+            height: 100vh;
+            position:relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #title {
+            position: absolute;
+            font-size: x-large;
+            top: 20%;
+            left: 35%;
+            color:#63f030;
+            font-family: "Sniglet", system-ui;
+        }
+        img {
+            position: absolute;
+            width: 100%;
+            height: 100vh;
+        }
     </style>
 </head>
 <body>
@@ -34,7 +95,12 @@
     <div id="ui">
         <p id="keyText">Press a key</p>
     </div>
-    <canvas id="renderCanvas"></canvas>
+    <div class="HomeUI">
+        <div id="background"><img src="https://i.postimg.cc/8z1HtYR1/Bally-s-Adventure-Extended.png"></div>
+        <div id="title"><h1>Bally's journey</h1></div>
+        <button class="buttons" id = "button1">PLAY</button>
+        <canvas id="renderCanvas"></canvas>
+    </div>
     <script type="module" src="/main.js"></script>
 
 </body>
