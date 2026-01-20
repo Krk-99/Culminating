@@ -353,3 +353,5 @@
 // skipping this going to game ui
 // gtg sleep so hopefully sir gives me another day
 // oh yea i didnt finish my other coding
+// back ummm so yea kindav a tight deadline but i think i can make it maybe (tryna finish it by today or tmrw)
+// gonna start working on proper texturing

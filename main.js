@@ -1,5 +1,5 @@
 import * as BABYLON from '@babylonjs/core';
-import * as GUI from '@babylonjs/gui'
+// import * as GUI from '@babylonjs/gui'
 import '@babylonjs/loaders/glTF/2.0/'
 const canvas = document.getElementById('renderCanvas');
 const engine = new BABYLON.Engine(canvas);
@@ -52,10 +52,20 @@ let pos;
 let maxdrop;
 let nomove;
 
+let buttons = [];
+let lvl2 = false
 let rocks;
 let trees;
 let rocky = [];
 let forest = [];
+let faceuv = new Array(6);
+faceuv[0] = new BABYLON.Vector4(0.5, 0.5, 1, 1)
+faceuv[1] = new BABYLON.Vector4(0.5, 0.5, 1, 1)
+faceuv[2] = new BABYLON.Vector4(0.5, 0.5, 1, 1)
+faceuv[3] = new BABYLON.Vector4(0.5, 0.5, 1, 1)
+faceuv[4] = new BABYLON.Vector4(0, 0.5, 0.5, 1)
+faceuv[5] = new BABYLON.Vector4(0, 0, 0.5, 0.5)
+
 
 // Gravity and physics variables
 let gravity = 10;
@@ -89,14 +99,17 @@ const createScene = function() {
     skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
     skybox.material = skyboxMaterial;   
     // Temporary box for player
-    const createGroundBlock = (name, x, y, z, width, height, depth, active, moving) => {
-        const blk = new BABYLON.MeshBuilder.CreateBox(name, {width: width, height: height, depth: depth}, scene)
+    const createGroundBlock = (name, x, y, z, width, height, depth, active, moving, secondlvl = false) => {
+        const blk = new BABYLON.MeshBuilder.CreateBox(name, {width: width, height: height, depth: depth, faceUV: faceuv, wrap: true,}, scene)
         blk.position.x = x
         blk.position.y = y
         blk.position.z = z
         blk.setEnabled(active)
         if (moving) {
             risinggrounds.push(blk)
+        }
+        if (secondlvl) {
+            blk.secondlvl = true
         }
         blk.IsGround = true
         grounds.push(blk)
@@ -112,14 +125,20 @@ const createScene = function() {
             rock.parent = rockNode
             return rockNode
         }
-        const createRocks = (name, x, y, z, scaling) => {
+        const createRocks = (name, x, y, z, rotx, roty, rotz, scaling) => {
             const rock = createRockInstances(name)
             rock.position = new BABYLON.Vector3(x, y, z)
             rock.scaling = new BABYLON.Vector3(scaling, scaling, scaling)
+            rock.rotation = new BABYLON.Vector3(rotx, roty, rotz)
+
             rocky.push(rock)
             return rock
         }
-        createRocks('rock1', 5, -1, -5, 3)
+        createRocks('rock1', 5, -1, -5,0, 0, 0, 3)
+        createRocks('rock2', -4.25, -1, 0.52,0, 0, 0, 8)
+        createRocks('rock3', -2.285, -1, 2.496, 0.3, 0, 0, 2)
+        createRocks('rock4', 4.044, -1, 3.814, 0, 0.5, 0, 10)
+
     })
     BABYLON.ImportMeshAsync('models/Tree.glb', scene).then((result) => {
         const masterRoot = result.meshes[0];
@@ -138,18 +157,30 @@ const createScene = function() {
             return instanceRoot;
         };
         
-        const createTrees = (name, x, y, z, scaling) => {
+        const createTrees = (name, x, y, z, rotx, roty, rotz, scaling) => {
             const tree = createTreeInstances(name);
             tree.position = new BABYLON.Vector3(x, y, z);
             tree.scaling = new BABYLON.Vector3(scaling, scaling, scaling);
+            tree.rotation = new BABYLON.Vector3(rotx, roty, rotz)
             forest.push(tree);
             return tree;
         };
         
-        createTrees('tree', -5, -0.7, -1, 0.5);
-        createTrees('tree1', 5, -0.7, -1, 0.5);
+        createTrees('tree', -4.5, -0.7, -1,0, 0, 0, 0.5);
+        createTrees('tree1', 4.5, -0.7, -1,0, 0, 0,  0.5);
+        createTrees('tree2', -1.424, -0.7, 3.75, 0, 0, 0, 0.5)
+        createTrees('tree3', 1.719, -0.7, 1.64, 0, 1, 0, 0.5)
     });
-    
+    const buttonclickmaterial = new BABYLON.StandardMaterial('clickcolor', scene)
+    buttonclickmaterial.diffuseColor = new BABYLON.Color3(1,0,0)
+    const buttonbot = BABYLON.MeshBuilder.CreateBox('buttonholder', {width: 0.5, height:0.1, depth: 0.5}, scene)
+    buttonbot.position = new BABYLON.Vector3(2, 1, -35.55)
+    buttonbot.rotation.x = BABYLON.Tools.ToRadians(90)
+    const buttonclick = BABYLON.MeshBuilder.CreateBox('buttonclick', {width: 0.4, height: 0.05, depth:0.4}, scene)
+    buttonclick.position = new BABYLON.Vector3(2, 1, -35.5)
+    buttonclick.rotation.x = BABYLON.Tools.ToRadians(90)
+    buttonclick.material = buttonclickmaterial
+    buttons.push(buttonclick)
     const box = BABYLON.MeshBuilder.CreateSphere('player', {}, scene);
     box.position.z = 3;
     box.isPickable = false;
@@ -168,10 +199,17 @@ const createScene = function() {
     createGroundBlock('plat7', 2, -1, -28, 2, 1,  2, false, true)
     createGroundBlock('plat8', 2, 1, -31, 2, 1, 2, false, true)
     createGroundBlock('plat9', 2, 0, -34, 2, 1, 2, false, false)
+    createGroundBlock('plat10', 0, 10, -36, 2, 1, 2, false, false, true)
     const material = new BABYLON.StandardMaterial("material", scene);
+    const material1 = new BABYLON.StandardMaterial("material1", scene)
     for (let i of grounds) {
-        material.diffuseTexture = new BABYLON.Texture("https://i.postimg.cc/yNYqT9qP/pixil-frame-0.png", scene);
-        i.material = material
+        if (i == grounds[0]) {
+            material1.diffuseTexture = new BABYLON.Texture("https://i.postimg.cc/8CHPwDsR/Large-Ground.png")
+            grounds[0].material = material1
+        } else {
+            material.diffuseTexture = new BABYLON.Texture("https://i.postimg.cc/vmqwcm46/Ground-Texture.png", scene);
+            i.material = material
+        }
     }
     gl = grounds.length
 
@@ -221,7 +259,10 @@ const reset = function() {
     }
     timercount = 0;
     timercount2 = 0;
-    
+    lvl2 = false
+    grounds[9].position = new BABYLON.Vector3(2, 0, -34)
+    buttons[0].position = new BABYLON.Vector3(2, 1, -35.5)
+
 }
 
 
@@ -429,6 +470,11 @@ scene.onBeforeRenderObservable.add(() => {
             })
         }
     }
+    if (hitf.pickedMesh == buttons[0]) {
+        buttons[0].position = new BABYLON.Vector3(2, 1, -35.54)
+        lvl2 = true
+        risinggrounds.push(grounds[9])
+    }
     if (hitf.pickedMesh) {
         input.forward = false 
     };
@@ -486,9 +532,36 @@ scene.onBeforeRenderObservable.add(() => {
 scene.onBeforeRenderObservable.add(() => {
     if (hit != null) {
         let groundd = hit.pickedMesh
-        
         for (let i = 0; i<gl; i++) {
-            if (hit.pickedMesh === grounds[i]) {
+            if (i > 8) {
+                if (lvl2) {
+                    if (gl - i == 1) {
+                        grounds[i - 2].setEnabled(true)
+                        grounds[i - 1].setEnabled(true)
+                        grounds[i].setEnabled(true)
+                    } else if (gl - i == 2) {
+                        grounds[i - 2].setEnabled(true)
+                        grounds[i - 1].setEnabled(true)
+                        grounds[i].setEnabled(true)
+                        grounds[i + 1].setEnabled(true)
+                    } else if (i > 1) {
+                        grounds[i - 2].setEnabled(true)
+                        grounds[i - 1].setEnabled(true)
+                        grounds[i].setEnabled(true)
+                        grounds[i + 1].setEnabled(true)
+                        grounds[i + 2].setEnabled(true)
+                    } else if (i == 1) {
+                        grounds[i - 1].setEnabled(true)
+                        grounds[i].setEnabled(true)
+                        grounds[i + 1].setEnabled(true)
+                        grounds[i + 2].setEnabled(true)
+                    } else if (i == 0) {
+                        grounds[i].setEnabled(true)
+                        grounds[i + 1].setEnabled(true)
+                        grounds[i + 2].setEnabled(true)
+                    }
+                }
+            } else if (hit.pickedMesh === grounds[i]) {
                 if (gl - i == 1) {
                     grounds[i - 2].setEnabled(true)
                     grounds[i - 1].setEnabled(true)
@@ -517,18 +590,42 @@ scene.onBeforeRenderObservable.add(() => {
             }
         }
     }
-    for(let i =0; i<risinggrounds.length; i++) {
-        if (risinggrounds[i].position.y > 6) {
-            direction[i] = new BABYLON.Vector3(0, -1, 0)
-        } else if (risinggrounds[i].position.y < -3) {
-            direction[i] = new BABYLON.Vector3(0, 1, 0)
-        }
-        if (hit != null) {
-            if (hit.pickedMesh == risinggrounds[i]) {
-                box.moveWithCollisions(direction[i].scale(0.05))
+    if (!lvl2) {
+        for (let i = 0; i<gl; i++) {
+            let num = i + 10
+            if (grounds[num]) {
+                grounds[num].setEnabled(false)
             }
+
         }
-        risinggrounds[i].position.addInPlace(direction[i].scale(0.05))
+    }
+    for(let i =0; i<risinggrounds.length; i++) {
+        if (risinggrounds[i] == grounds[9]) {
+            if (risinggrounds[i].position.y < 10) {
+                direction[i] = new BABYLON.Vector3(0, 1, 0)
+            } else {
+                risinggrounds.pop()
+                continue;
+            }
+            if (hit != null) {
+                if (hit.pickedMesh == risinggrounds[i]) {
+                    box.moveWithCollisions(direction[i].scale(0.05))
+                }
+            }
+            risinggrounds[i].position.addInPlace(direction[i].scale(0.05))
+        } else {
+            if (risinggrounds[i].position.y > 6) {
+                direction[i] = new BABYLON.Vector3(0, -1, 0)
+            } else if (risinggrounds[i].position.y < -3) {
+                direction[i] = new BABYLON.Vector3(0, 1, 0)
+            }
+            if (hit != null) {
+                if (hit.pickedMesh == risinggrounds[i]) {
+                    box.moveWithCollisions(direction[i].scale(0.05))
+                }
+            }
+            risinggrounds[i].position.addInPlace(direction[i].scale(0.05))
+        }
         
     }
 });
@@ -696,7 +793,7 @@ window.addEventListener('keydown', function(event) {
         // inputs = true;  
     }
     if (key === 'k') {
-
+        console.log(box.position)
     };
     if (event.shiftKey) {
         input.shift = true
