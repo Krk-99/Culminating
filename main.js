@@ -1,6 +1,7 @@
 import * as BABYLON from '@babylonjs/core';
 // import * as GUI from '@babylonjs/gui'
 import '@babylonjs/loaders/glTF/2.0/'
+import { EXT_texture_webp } from '@babylonjs/loaders/glTF/2.0/';
 const canvas = document.getElementById('renderCanvas');
 const engine = new BABYLON.Engine(canvas);
 
@@ -19,7 +20,7 @@ let input = {
     jump: false,
     shift: false
 }
-
+let helmnode;
 let grounds = []
 let gl;
 let hit;
@@ -99,7 +100,7 @@ const createScene = function() {
     skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
     skybox.material = skyboxMaterial;   
     // Temporary box for player
-    const createGroundBlock = (name, x, y, z, width, height, depth, active, moving, secondlvl = false) => {
+    const createGroundBlock = (name, x, y, z, width, height, depth, active, moving, secondlvl = false, horizontal = false) => {
         const blk = new BABYLON.MeshBuilder.CreateBox(name, {width: width, height: height, depth: depth, faceUV: faceuv, wrap: true,}, scene)
         blk.position.x = x
         blk.position.y = y
@@ -107,6 +108,9 @@ const createScene = function() {
         blk.setEnabled(active)
         if (moving) {
             risinggrounds.push(blk)
+            if (horizontal) {
+                blk.moveHorizontal = true
+            }
         }
         if (secondlvl) {
             blk.secondlvl = true
@@ -115,6 +119,27 @@ const createScene = function() {
         grounds.push(blk)
         return blk
     }
+    const box = BABYLON.MeshBuilder.CreateSphere('player', {}, scene);
+    box.position.z = 3;
+    box.isPickable = false;
+    const boxcolor = new BABYLON.StandardMaterial('playercolor', scene)
+    boxcolor.diffuseColor = new BABYLON.Color3(0.933,0.294,0.169)
+    box.material = boxcolor
+    BABYLON.ImportMeshAsync('models/KnightHelmet.glb', scene).then ((result) => {
+        console.log(result)
+        const playerhelm = result.meshes[1]
+        result.meshes[0].setEnabled(false)
+        helmnode = new BABYLON.TransformNode('playerhelm')
+        playerhelm.isPickable = false
+        playerhelm.scaling = new BABYLON.Vector3(0.55, 0.55, 0.55)
+        // playerhelm.position = box.position
+        playerhelm.parent = box 
+        playerhelm.rotation = new BABYLON.Vector3(0, -Math.PI/2, 0) 
+        playerhelm.position.addInPlace(new BABYLON.Vector3(0, 0.2, 0))
+        const helmcolor = new BABYLON.StandardMaterial('helm', scene)
+        helmcolor.diffuseColor = new BABYLON.Color3(0.753, 0.753, 0.753)
+        playerhelm.material = helmcolor
+    })
     BABYLON.ImportMeshAsync('models/Rocks.glb', scene).then((result) => {
         const masterRoot = result.meshes[0]
         const masterRocks = result.meshes[1]
@@ -181,9 +206,6 @@ const createScene = function() {
     buttonclick.rotation.x = BABYLON.Tools.ToRadians(90)
     buttonclick.material = buttonclickmaterial
     buttons.push(buttonclick)
-    const box = BABYLON.MeshBuilder.CreateSphere('player', {}, scene);
-    box.position.z = 3;
-    box.isPickable = false;
     const ground = BABYLON.MeshBuilder.CreateGround('ground', {width: 10, height: 10}, scene);
     ground.position.y = -1;
     ground.IsGround = true
@@ -200,6 +222,12 @@ const createScene = function() {
     createGroundBlock('plat8', 2, 1, -31, 2, 1, 2, false, true)
     createGroundBlock('plat9', 2, 0, -34, 2, 1, 2, false, false)
     createGroundBlock('plat10', 0, 10, -36, 2, 1, 2, false, false, true)
+    createGroundBlock('plat11', 8, 10, -39, 2, 1, 2, false, true, true, true)
+    createGroundBlock('plat12', -8, 10, -42, 2, 1, 2, false, true, true, true)
+    createGroundBlock('plat13', 10, 10, -45, 2, 1, 2, false, true, true, true)
+    createGroundBlock('plat14',  0, 10, -50, 2, 1, 2, false, false, true)
+    createGroundBlock('plat15', -3, 12, -53, 2, 1, 2, false, true, true, true)
+    createGroundBlock('plat15', 2, 7, -56, 2, 1, 2, false, true, true)
     const material = new BABYLON.StandardMaterial("material", scene);
     const material1 = new BABYLON.StandardMaterial("material1", scene)
     for (let i of grounds) {
@@ -613,7 +641,38 @@ scene.onBeforeRenderObservable.add(() => {
                 }
             }
             risinggrounds[i].position.addInPlace(direction[i].scale(0.05))
-        } else {
+        } else if(risinggrounds[i].moveHorizontal) {
+            if (!direction[i]) {
+                direction.push(new BABYLON.Vector3(1,0,0))
+            }
+            if (risinggrounds[i].position.x > 6) {
+                direction[i] = new BABYLON.Vector3(-1,0, 0)
+            } else if (risinggrounds[i].position.x < -6) {
+                direction[i] = new BABYLON.Vector3(1, 0, 0)
+            }
+            risinggrounds[i].position.addInPlace(direction[i].scale(0.05))
+            if (hit != null) {
+                if (hit.pickedMesh == risinggrounds[i]) {
+                    box.moveWithCollisions(direction[i].scale(0.05))
+                }
+            }
+        } else if(risinggrounds[i].secondlvl) {
+            if (!direction[i]) {
+                direction.push(new BABYLON.Vector3(0,1,0))
+            }
+            if (risinggrounds[i].position.y > 17) {
+                direction[i] = new BABYLON.Vector3(0, -1, 0)
+            } else if (risinggrounds[i].position.y < 5) {
+                direction[i] = new BABYLON.Vector3(0, 1, 0)
+            }
+            if (hit != null) {
+                if (hit.pickedMesh == risinggrounds[i]) {
+                    box.moveWithCollisions(direction[i].scale(0.05))
+                }
+            }
+            risinggrounds[i].position.addInPlace(direction[i].scale(0.05))
+            
+        } else { 
             if (risinggrounds[i].position.y > 6) {
                 direction[i] = new BABYLON.Vector3(0, -1, 0)
             } else if (risinggrounds[i].position.y < -3) {
