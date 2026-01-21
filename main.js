@@ -766,7 +766,7 @@ scene.onBeforeRenderObservable.add(() => {
     if (!isGrounded) {
         // if player is nowhere near ground it will go to the first if block which will let the player fall completely
         startTimer2(); 
-        drop = gravity * timercount2/1000
+        drop = gravity * timercount2/1500
         if (!colliding) {
             // starts the normal gravity feature
             isGrounded = false
