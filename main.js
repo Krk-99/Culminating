@@ -734,7 +734,7 @@ scene.onBeforeRenderObservable.add(() => {
     // console.log(hit.pickedMesh)
     if (jump && jumpcount > 0) {
         if (hitu.pickedMesh) jumpcount = 0; 
-        box.moveWithCollisions(height.scale(-0.3))
+        box.moveWithCollisions(height.scale(-0.6))
     }
     // isGrounded = true
     // isGrounded = false
@@ -766,7 +766,7 @@ scene.onBeforeRenderObservable.add(() => {
     if (!isGrounded) {
         // if player is nowhere near ground it will go to the first if block which will let the player fall completely
         startTimer2(); 
-        drop = gravity * timercount2/500
+        drop = gravity * timercount2/1000
         if (!colliding) {
             // starts the normal gravity feature
             isGrounded = false
