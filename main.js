@@ -125,7 +125,7 @@ const createScene = function() {
     const boxcolor = new BABYLON.StandardMaterial('playercolor', scene)
     boxcolor.diffuseColor = new BABYLON.Color3(0.933,0.294,0.169)
     box.material = boxcolor
-    BABYLON.ImportMeshAsync('models/KnightHelmet.glb', scene).then ((result) => {
+    BABYLON.ImportMeshAsync('./models/KnightHelmet.glb', scene).then ((result) => {
         console.log(result)
         const playerhelm = result.meshes[1]
         result.meshes[0].setEnabled(false)
@@ -140,7 +140,7 @@ const createScene = function() {
         helmcolor.diffuseColor = new BABYLON.Color3(0.753, 0.753, 0.753)
         playerhelm.material = helmcolor
     })
-    BABYLON.ImportMeshAsync('models/Rocks.glb', scene).then((result) => {
+    BABYLON.ImportMeshAsync('./models/Rocks.glb', scene).then((result) => {
         const masterRoot = result.meshes[0]
         const masterRocks = result.meshes[1]
         masterRoot.setEnabled(false)
@@ -165,7 +165,7 @@ const createScene = function() {
         createRocks('rock4', 4.044, -1, 3.814, 0, 0.5, 0, 10)
 
     })
-    BABYLON.ImportMeshAsync('models/Tree.glb', scene).then((result) => {
+    BABYLON.ImportMeshAsync('./models/Tree.glb', scene).then((result) => {
         const masterRoot = result.meshes[0];
         const masterTrunk = result.meshes[1];
         const masterLeaves = result.meshes[2]; 
