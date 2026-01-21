@@ -734,7 +734,7 @@ scene.onBeforeRenderObservable.add(() => {
     // console.log(hit.pickedMesh)
     if (jump && jumpcount > 0) {
         if (hitu.pickedMesh) jumpcount = 0; 
-        box.moveWithCollisions(height.scale(-0.6))
+        box.moveWithCollisions(height.scale(-0.3))
     }
     // isGrounded = true
     // isGrounded = false
