@@ -1,0 +1,11 @@
+/*
+  Access-Control-Allow-Origin: *
+  
+/*.gltf
+  Content-Type: model/gltf+json
+
+/*.glb
+  Content-Type: model/gltf-binary
+
+/*.bin
+  Content-Type: application/octet-stream
