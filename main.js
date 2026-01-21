@@ -125,7 +125,7 @@ const createScene = function() {
     const boxcolor = new BABYLON.StandardMaterial('playercolor', scene)
     boxcolor.diffuseColor = new BABYLON.Color3(0.933,0.294,0.169)
     box.material = boxcolor
-    BABYLON.ImportMeshAsync('/models/KnightHelmet.glb', scene).then ((result) => {
+    BABYLON.ImportMeshAsync('models/KnightHelmet.glb', scene).then ((result) => {
         console.log(result)
         const playerhelm = result.meshes[1]
         result.meshes[0].setEnabled(false)
